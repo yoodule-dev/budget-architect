@@ -134,28 +134,36 @@
                             
                             <!-- Sub Allocations -->
                             <div class="space-y-4">
-                                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Fixed Sub-Allocations</h3>
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Fixed Sub-Allocations</h3>
+                                    <button @click="addFixedExpense" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-blue-600 transition-colors" title="Add Expense">
+                                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                                 
                                 <div class="space-y-3">
-                                    <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                                        <span class="text-xs font-bold text-slate-500">Loan / Debt</span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs font-bold text-slate-400">{{ selectedCurrency }}</span>
-                                            <input type="number" 
-                                                :value="loanAmount" 
-                                                @input="updateFixedBill('loanAmount', 'essentials', $event.target.value)"
-                                                class="w-20 bg-transparent text-right font-black text-slate-900 dark:text-white text-xs outline-none">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                                        <span class="text-xs font-bold text-slate-500">Family Help</span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs font-bold text-slate-400">{{ selectedCurrency }}</span>
-                                            <input type="number" 
-                                                :value="familyAmount" 
-                                                @input="updateFixedBill('familyAmount', 'lifestyle', $event.target.value)"
-                                                class="w-20 bg-transparent text-right font-black text-slate-900 dark:text-white text-xs outline-none">
+                                    <div v-for="(expense, index) in fixedExpenses" :key="index" class="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 group">
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex justify-between items-center">
+                                                <input type="text" v-model="expense.name" @input="saveSettings"
+                                                    class="bg-transparent text-xs font-bold text-slate-500 outline-none w-full mr-2" placeholder="Expense name">
+                                                <button @click="removeFixedExpense(index)" class="text-slate-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                                                    <i data-lucide="x" class="w-3 h-3"></i>
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <select v-model="expense.category" @change="saveSettings"
+                                                    class="bg-transparent text-[10px] font-bold text-slate-400 outline-none cursor-pointer hover:text-slate-600 dark:hover:text-slate-200">
+                                                    <option value="essentials">Essentials</option>
+                                                    <option value="lifestyle">Lifestyle</option>
+                                                    <option value="future">Future</option>
+                                                </select>
+                                                <div class="flex items-center gap-1">
+                                                    <span class="text-[10px] font-bold text-slate-400">{{ selectedCurrency }}</span>
+                                                    <input type="number" v-model.number="expense.amount" @input="saveSettings"
+                                                        class="w-20 bg-transparent text-right font-black text-slate-900 dark:text-white text-xs outline-none">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -283,7 +291,10 @@
                 income: 500000, selectedCurrency: '₦', 
                 essentialsPct: 60, lifestylePct: 20, futurePct: 20,
                 essentialsAmount: 300000, lifestyleAmount: 100000, futureAmount: 100000,
-                loanAmount: 150000, familyAmount: 40000,
+                fixedExpenses: [
+                    { name: 'Loan / Debt', amount: 150000, category: 'essentials' },
+                    { name: 'Family Help', amount: 40000, category: 'lifestyle' }
+                ],
                 estimateAmount: 0, estimateCategory: 'food',
                 currencies: [
                     { code: 'USD', name: 'US Dollar', symbol: '$' }, { code: 'EUR', name: 'Euro', symbol: '€' }, { code: 'GBP', name: 'British Pound', symbol: '£' }, { code: 'JPY', name: 'Japanese Yen', symbol: '¥' }, { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' }, { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' }, { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' }, { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' }, { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' }, { code: 'INR', name: 'Indian Rupee', symbol: '₹' }, { code: 'ZAR', name: 'South African Rand', symbol: 'R' }, { code: 'MXN', name: 'Mexican Peso', symbol: '$' }, { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' }, { code: 'RUB', name: 'Russian Ruble', symbol: '₽' }, { code: 'KRW', name: 'South Korean Won', symbol: '₩' }, { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' }, { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼' }, { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' }, { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' }, { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' }, { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' }, { code: 'DKK', name: 'Danish Krone', symbol: 'kr' }, { code: 'TRY', name: 'Turkish Lira', symbol: '₺' }, { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' }, { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' }, { code: 'PHP', name: 'Philippine Peso', symbol: '₱' }, { code: 'THB', name: 'Thai Baht', symbol: '฿' }, { code: 'VND', name: 'Vietnamese Dong', symbol: '₫' }, { code: 'PLN', name: 'Polish Zloty', symbol: 'zł' }, { code: 'ILS', name: 'Israeli New Shekel', symbol: '₪' }, { code: 'COP', name: 'Colombian Peso', symbol: '$' }, { code: 'CLP', name: 'Chilean Peso', symbol: '$' }, { code: 'PEN', name: 'Peruvian Sol', symbol: 'S/' }, { code: 'ARS', name: 'Argentine Peso', symbol: '$' }, { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' }, { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£' }, { code: 'GHS', name: 'Ghanaian Cedi', symbol: 'GH₵' }
@@ -293,8 +304,10 @@
                 dailyAllowance() { return this.income / 30.417; },
                 catLimit() {
                     const d = this.dailyAllowance;
-                    if (this.estimateCategory === 'food') return (this.essentialsAmount - this.loanAmount) / 30.417;
-                    if (this.estimateCategory === 'lifestyle') return (this.lifestyleAmount - this.familyAmount) / 30.417;
+                    if (this.estimateCategory === 'food') return (this.essentialsAmount - this.getTotalFixedByCategory('essentials')) / 30.417;
+                    if (this.estimateCategory === 'lifestyle') return (this.lifestyleAmount - this.getTotalFixedByCategory('lifestyle')) / 30.417;
+                    if (this.estimateCategory === 'family') return this.getTotalFixedByCategory('lifestyle') / 30.417;
+                    if (this.estimateCategory === 'extra_loan') return this.getTotalFixedByCategory('essentials') / 30.417;
                     return d * 0.1;
                 },
                 verdictRatio() { return this.estimateAmount / this.catLimit; },
@@ -303,10 +316,14 @@
                 verdictClasses() { return this.verdictRatio <= 1 ? "bg-emerald-500 border-emerald-300 text-white" : "bg-amber-400 border-amber-300 text-slate-900 dark:text-slate-50"; },
                 verdictMessage() { return this.verdictRatio <= 1 ? "This expense is within your daily category limit." : "Warning: This purchase consumes your daily budget. Avoid further spending in this category."; },
                 budgetBreakdown() {
+                    const essentialsFixed = this.getTotalFixedByCategory('essentials');
+                    const lifestyleFixed = this.getTotalFixedByCategory('lifestyle');
+                    const futureFixed = this.getTotalFixedByCategory('future');
+                    
                     return [
-                        { name: 'Loans / Debt', amount: this.loanAmount / 30.417, monthly: this.loanAmount, icon: 'landmark' },
-                        { name: 'Food & Utilities', amount: (this.essentialsAmount - this.loanAmount) / 30.417, monthly: (this.essentialsAmount - this.loanAmount), icon: 'shopping-bag' },
-                        { name: 'Family Help', amount: this.familyAmount / 30.417, monthly: this.familyAmount, icon: 'users' },
+                        { name: 'Fixed (Essentials)', amount: essentialsFixed / 30.417, monthly: essentialsFixed, icon: 'landmark' },
+                        { name: 'Safe to Spend', amount: (this.essentialsAmount - essentialsFixed) / 30.417, monthly: (this.essentialsAmount - essentialsFixed), icon: 'shopping-bag' },
+                        { name: 'Fun & Lifestyle', amount: (this.lifestyleAmount - lifestyleFixed) / 30.417, monthly: (this.lifestyleAmount - lifestyleFixed), icon: 'users' },
                         { name: 'Investments', amount: this.futureAmount / 30.417, monthly: this.futureAmount, icon: 'trending-up' }
                     ];
                 }
@@ -316,6 +333,14 @@
                     if (newVal > 0) {
                         this.trackEvent('purchase_estimated', { category: this.estimateCategory, amount: newVal, risk: this.verdictRatio > 1 ? 'high' : 'low' });
                     }
+                    this.saveSettings();
+                },
+                estimateCategory() {
+                    this.saveSettings();
+                },
+                fixedExpenses: {
+                    handler() { this.saveSettings(); },
+                    deep: true
                 }
             },
             methods: {
@@ -351,28 +376,26 @@
                     const amount = parseFloat(val) || 0;
                     this[key + 'Amount'] = amount;
                     
-                    // Total income is purely the sum of the 3 buckets now
                     this.income = this.essentialsAmount + this.lifestyleAmount + this.futureAmount;
-                    
-                    // Percentage labels/sliders are strictly LOCKED to planning mode.
-                    // We do NOT update pcts here based on spending.
                     this.trackEvent('category_amount_updated', { category: key, amount: amount });
                     this.saveSettings();
                 },
-                updateFixedBill(subKey, parentKey, val) {
-                    const amount = parseFloat(val) || 0;
-                    this[subKey] = amount;
-                    
-                    const parentAmt = this[parentKey + 'Amount'];
-                    if (amount > parentAmt) {
-                        // Expand parent to accommodate the bill
-                        this.updateCategoryAmount(parentKey, amount);
-                    }
-                    this.trackEvent('fixed_bill_updated', { type: subKey, amount: amount });
+                getTotalFixedByCategory(cat) {
+                    return this.fixedExpenses
+                        .filter(e => e.category === cat)
+                        .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                },
+                addFixedExpense() {
+                    this.fixedExpenses.push({ name: 'New Expense', amount: 0, category: 'essentials' });
+                    this.$nextTick(() => { lucide.createIcons(); });
+                    this.saveSettings();
+                },
+                removeFixedExpense(index) {
+                    this.fixedExpenses.splice(index, 1);
+                    this.$nextTick(() => { lucide.createIcons(); });
                     this.saveSettings();
                 },
                 updateByIncome() {
-                    // When total income edited, re-allocate based on FIXED percentages
                     this.essentialsAmount = this.income * (this.essentialsPct / 100);
                     this.lifestyleAmount = this.income * (this.lifestylePct / 100);
                     this.futureAmount = this.income * (this.futurePct / 100);
@@ -401,7 +424,6 @@
                         } else if (v1 > 0) {
                             this[otherKeys[1]]--;
                         } else {
-                            // Force changed key down if both others are 0
                             this[changedPctKey]--;
                         }
                         diff--;
@@ -422,13 +444,20 @@
                     this.saveSettings();
                 },
                 saveSettings() { 
-                    localStorage.setItem('budget_data', JSON.stringify({ 
+                    const dataToSave = { 
                         income: this.income, 
                         selectedCurrency: this.selectedCurrency,
                         essentialsPct: this.essentialsPct,
                         lifestylePct: this.lifestylePct,
-                        futurePct: this.futurePct
-                    })); 
+                        futurePct: this.futurePct,
+                        essentialsAmount: this.essentialsAmount,
+                        lifestyleAmount: this.lifestyleAmount,
+                        futureAmount: this.futureAmount,
+                        fixedExpenses: this.fixedExpenses,
+                        estimateAmount: this.estimateAmount,
+                        estimateCategory: this.estimateCategory
+                    };
+                    localStorage.setItem('budget_data', JSON.stringify(dataToSave)); 
                     this.trackEvent('settings_saved', { currency: this.selectedCurrency });
                 }
             },
@@ -444,13 +473,31 @@
                 try {
                     if (localStorage.budget_data) {
                         const saved = JSON.parse(localStorage.budget_data);
-                        if (saved.income) this.income = saved.income;
-                        if (saved.selectedCurrency) this.selectedCurrency = saved.selectedCurrency;
-                        if (saved.essentialsPct !== undefined) this.essentialsPct = saved.essentialsPct;
-                        if (saved.lifestylePct !== undefined) this.lifestylePct = saved.lifestylePct;
-                        if (saved.futurePct !== undefined) this.futurePct = saved.futurePct;
+                        const fields = [
+                            'income', 'selectedCurrency', 
+                            'essentialsPct', 'lifestylePct', 'futurePct',
+                            'essentialsAmount', 'lifestyleAmount', 'futureAmount',
+                            'fixedExpenses', 'estimateAmount', 'estimateCategory'
+                        ];
+                        fields.forEach(field => {
+                            if (saved[field] !== undefined) {
+                                this[field] = saved[field];
+                            }
+                        });
+
+                        // Migration for old loanAmount/familyAmount
+                        if (!saved.fixedExpenses) {
+                            if (saved.loanAmount !== undefined) {
+                                this.fixedExpenses.push({ name: 'Loan / Debt', amount: saved.loanAmount, category: 'essentials' });
+                            }
+                            if (saved.familyAmount !== undefined) {
+                                this.fixedExpenses.push({ name: 'Family Help', amount: saved.familyAmount, category: 'lifestyle' });
+                            }
+                        }
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Error loading settings:", e);
+                }
 
                 lucide.createIcons(); 
             }
