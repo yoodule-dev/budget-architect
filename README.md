@@ -15,6 +15,8 @@ Budget Architect is a high-precision budgeting tool designed to bridge the gap b
 - **Intelligent Data Handling:** Seamlessly handles everything from ₦10 to ₦1 Septillion with conditional compact notation and hover-to-reveal full precision.
 - **Advanced Dashboard:** High-contrast dark mode, mobile-responsive layout, and micro-animations for a premium experience.
 - **Purchase Estimator:** Test-drive potential purchases against specific category limits before you spend.
+- **Analytics & Tracking:** Built-in hooks for Google Analytics 4 (GA4) and Microsoft Clarity to monitor traffic and user behavior.
+- **SEO Optimized:** Enterprise-standard Open Graph and Twitter meta tags for premium social sharing previews.
 
 ## 🛠️ Technology Stack
 
@@ -22,6 +24,7 @@ Budget Architect is a high-precision budgeting tool designed to bridge the gap b
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) (CDN)
 - **Icons:** [Lucide Icons](https://lucide.dev/)
 - **Persistence:** LocalStorage API for cross-session data stability.
+- **Analytics:** Ready-to-use GA4 & Microsoft Clarity integration.
 
 ## 📦 Deployment
 

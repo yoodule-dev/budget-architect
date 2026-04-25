@@ -5,7 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Money Manager | Industry Standard Budgeting</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SEO & Social Media Meta Tags -->
+    <meta name="description" content="Master your finances with Budget Architect. An industry-standard budgeting tool to help you allocate income, manage debt, and plan future investments.">
+    <meta property="og:title" content="Budget Architect | Professional Money Manager">
+    <meta property="og:description" content="The ultimate tool for financial discipline and growth.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yoodule.com">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Google Analytics (GA4) Placeholder -->
+    <!-- Replace 'G-XXXXXXXXXX' with your actual Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YZY9559RS1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YZY9559RS1');
+    </script>
+
+    <!-- Microsoft Clarity Placeholder -->
+    <!-- Replace 'XXXXXXXXXX' with your Clarity Project ID -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wheuaoeh86");
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class'
@@ -282,12 +311,34 @@
                     ];
                 }
             },
+            watch: {
+                estimateAmount(newVal) {
+                    if (newVal > 0) {
+                        this.trackEvent('purchase_estimated', { category: this.estimateCategory, amount: newVal, risk: this.verdictRatio > 1 ? 'high' : 'low' });
+                    }
+                }
+            },
             methods: {
                 toggleTheme() {
                     this.isDark = !this.isDark;
                     if (this.isDark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
                     else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+                    this.trackEvent('theme_toggle', { theme: this.isDark ? 'dark' : 'light' });
                     this.$nextTick(() => { lucide.createIcons(); });
+                },
+                trackEvent(name, params = {}) {
+                    // Log to console for debugging
+                    console.log(`[Tracking] ${name}:`, params);
+                    
+                    // Trigger GA4 event if configured
+                    if (typeof gtag === 'function') {
+                        gtag('event', name, params);
+                    }
+
+                    // Trigger Clarity event if configured
+                    if (window.clarity) {
+                        window.clarity("set", name, JSON.stringify(params));
+                    }
                 },
                 formatCurrency(v) { return Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
                 formatCompact(v) { 
@@ -305,6 +356,7 @@
                     
                     // Percentage labels/sliders are strictly LOCKED to planning mode.
                     // We do NOT update pcts here based on spending.
+                    this.trackEvent('category_amount_updated', { category: key, amount: amount });
                     this.saveSettings();
                 },
                 updateFixedBill(subKey, parentKey, val) {
@@ -316,6 +368,7 @@
                         // Expand parent to accommodate the bill
                         this.updateCategoryAmount(parentKey, amount);
                     }
+                    this.trackEvent('fixed_bill_updated', { type: subKey, amount: amount });
                     this.saveSettings();
                 },
                 updateByIncome() {
@@ -323,6 +376,7 @@
                     this.essentialsAmount = this.income * (this.essentialsPct / 100);
                     this.lifestyleAmount = this.income * (this.lifestylePct / 100);
                     this.futureAmount = this.income * (this.futurePct / 100);
+                    this.trackEvent('income_updated', { value: this.income });
                     this.saveSettings();
                 },
                 resetToDefaults() { localStorage.clear(); location.reload(); },
@@ -375,6 +429,7 @@
                         lifestylePct: this.lifestylePct,
                         futurePct: this.futurePct
                     })); 
+                    this.trackEvent('settings_saved', { currency: this.selectedCurrency });
                 }
             },
             mounted() { 
