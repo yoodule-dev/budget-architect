@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Manager | Industry Standard Budgeting</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased">
+
+    <div id="app" v-cloak class="min-h-screen pb-20">
+        <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 mb-8">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white"><i data-lucide="wallet" class="w-6 h-6"></i>
+                    </div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">Budget<span
+                            class="text-blue-600">Architect</span></h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button @click="toggleTheme" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Toggle Theme">
+                        <i data-lucide="moon" v-if="!isDark" key="moon" class="w-5 h-5 text-slate-500 dark:text-slate-400"></i>
+                        <i data-lucide="sun" v-else key="sun" class="w-5 h-5 text-amber-400"></i>
+                    </button>
+                    <div class="hidden sm:block text-sm font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 dark:bg-slate-800 px-3 py-1 rounded-full">Industry Standard
+                    Framework</div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <aside class="lg:col-span-4 space-y-6 order-2 lg:order-1">
+                    <!-- Configuration Section -->
+                    <section class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h2
+                            class="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-6 flex items-center gap-2">
+                            <i data-lucide="settings-2" class="w-4 h-4"></i> Configuration</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Monthly Net Income</label>
+                                <div class="relative"><span
+                                        class="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 dark:text-slate-500 text-lg">{{
+                                        selectedCurrency }}</span>
+                                    <input type="number" v-model.number="income" @input="updateByIncome"
+                                        class="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-lg dark:text-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300 dark:text-slate-600">Display Currency</label>
+                                <select v-model="selectedCurrency" @change="saveSettings"
+                                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer dark:text-white">
+                                    <option v-for="curr in currencies" :value="curr.symbol">{{ curr.code }} - {{
+                                        curr.name }}</option>
+                                </select>
+                            </div>
+                            <hr class="border-slate-100 dark:border-slate-800">
+                            <div class="space-y-6">
+                                <div v-for="(val, key) in {essentials: ['Essentials', 'blue'], lifestyle: ['Lifestyle', 'amber'], future: ['Future', 'emerald']}"
+                                    :key="key" class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ val[0] }}</span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" v-model.number="$data[key + 'Pct']" @input="syncPercentages(key)"
+                                                class="w-12 text-right bg-transparent font-black text-blue-600 dark:text-blue-400 text-sm outline-none">
+                                            <span class="text-[10px] font-bold text-slate-400">%</span>
+                                        </div>
+                                    </div>
+                                    <input type="range" v-model.number="$data[key + 'Pct']" min="0" max="100"
+                                        @input="syncPercentages(key)"
+                                        class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-4">
+                                    
+                                    <div class="flex items-center gap-2 bg-white dark:bg-slate-950 p-2 px-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <span class="text-xs font-bold text-slate-400">{{ selectedCurrency }}</span>
+                                        <input type="number" 
+                                            :value="Math.round($data[key + 'Amount'])" 
+                                            @input="updateCategoryAmount(key, $event.target.value)"
+                                            class="w-full bg-transparent font-black text-slate-900 dark:text-white text-sm outline-none">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase shrink-0">/ mo</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+                            
+                            <!-- Sub Allocations -->
+                            <div class="space-y-4">
+                                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Fixed Sub-Allocations</h3>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                                        <span class="text-xs font-bold text-slate-500">Loan / Debt</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold text-slate-400">{{ selectedCurrency }}</span>
+                                            <input type="number" 
+                                                :value="loanAmount" 
+                                                @input="updateFixedBill('loanAmount', 'essentials', $event.target.value)"
+                                                class="w-20 bg-transparent text-right font-black text-slate-900 dark:text-white text-xs outline-none">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                                        <span class="text-xs font-bold text-slate-500">Family Help</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold text-slate-400">{{ selectedCurrency }}</span>
+                                            <input type="number" 
+                                                :value="familyAmount" 
+                                                @input="updateFixedBill('familyAmount', 'lifestyle', $event.target.value)"
+                                                class="w-20 bg-transparent text-right font-black text-slate-900 dark:text-white text-xs outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Strategy Tip -->
+                    <section class="bg-blue-600 p-5 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none">
+                        <h3 class="text-sm font-bold mb-1 flex items-center gap-2"><i data-lucide="lightbulb"
+                                class="w-4 h-4"></i> Strategy Tip</h3>
+                        <p class="text-xs text-blue-100 leading-relaxed">Industry standards suggest keeping fixed costs
+                            below 60% of income.</p>
+                    </section>
+                </aside>
+
+                <main class="lg:col-span-8 space-y-8 order-1 lg:order-2">
+                    <!-- Decision Hub -->
+                    <section class="bg-slate-900 dark:bg-slate-800 dark:border dark:border-slate-700 p-8 rounded-3xl text-white shadow-xl">
+                        <div class="flex items-center gap-3 mb-6"><i data-lucide="zap"
+                                class="w-6 h-6 text-amber-400"></i>
+                            <h3 class="text-xl font-bold">Purchase Estimator</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 dark:text-slate-400 uppercase mb-2">Proposed
+                                    Cost</label>
+                                <div class="relative"><span
+                                        class="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500 dark:text-slate-400 text-lg">{{
+                                        selectedCurrency }}</span>
+                                    <input type="number" v-model.number="estimateAmount"
+                                        class="w-full pl-12 pr-4 py-4 bg-slate-800 dark:bg-slate-900 border border-slate-700 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg dark:text-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 dark:text-slate-400 uppercase mb-2">Category</label>
+                                <select v-model="estimateCategory"
+                                    class="w-full px-4 py-4 bg-slate-800 dark:bg-slate-900 border border-slate-700 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold cursor-pointer dark:text-white">
+                                    <option value="food">🍱 Food & Groceries</option>
+                                    <option value="lifestyle">🏎️ Lifestyle & Fun</option>
+                                    <option value="family">🤝 Family Assistance</option>
+                                    <option value="extra_loan">🏦 Extra Debt Payment</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Verdict Box -->
+                        <div v-if="estimateAmount > 0"
+                            :class="['p-6 rounded-3xl border-2 flex flex-col md:flex-row items-start gap-5 transition-all duration-300', verdictClasses]">
+                            <div class="text-4xl shrink-0">{{ verdictIcon }}</div>
+                            <div class="flex-1 w-full text-left">
+                                <div
+                                    class="flex justify-between items-start lg:items-center flex-col lg:flex-row gap-2">
+                                    <h4 class="text-lg font-black dark:text-slate-100 uppercase tracking-tight">{{ verdictTitle }}</h4>
+                                    <span
+                                        class="text-xs font-bold px-3 py-1 bg-black/10 rounded-full inline-flex items-center gap-1">
+                                        Daily Limit: {{ selectedCurrency }}{{ formatCurrency(catLimit) }}
+                                    </span>
+                                </div>
+                                <p class="text-sm opacity-90 leading-relaxed mt-2">{{ verdictMessage }}</p>
+                                <div
+                                    class="mt-4 w-full h-3 bg-black/10 rounded-full overflow-hidden border border-black/10 shadow-inner">
+                                    <div class="h-full bg-white dark:bg-slate-900 shadow-sm transition-all duration-500"
+                                        :style="{width: Math.min(100, (estimateAmount/catLimit)*100) + '%'}"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] font-bold uppercase mt-2 opacity-80">
+                                    <span>Using {{ selectedCurrency }}{{ formatCurrency(estimateAmount) }}</span>
+                                    <span>{{ Math.round((estimateAmount/catLimit)*100) }}% Used</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Daily Baseline -->
+                    <section
+                        class="bg-white dark:bg-slate-900 dark:bg-slate-950/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative flex flex-col items-start gap-1">
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Total Daily Safe
+                            Spend</span>
+                        <div class="flex items-center gap-3 mt-1 min-w-0 w-full">
+                            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-slate-900 dark:text-slate-50 truncate">{{ selectedCurrency }}{{ formatCurrency(dailyAllowance) }}</h2>
+                        </div>
+                    </section>
+
+                    <!-- Breakdown -->
+                    <section class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div v-for="cat in budgetBreakdown" :key="cat.name"
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-blue-200 hover:shadow-md transition-all shadow-sm group">
+                            <div class="flex justify-between items-start mb-6 gap-3">
+                                <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
+                                    <i :data-lucide="cat.icon" class="w-6 h-6 text-slate-600 group-hover:text-blue-600"></i>
+                                </div>
+                                <div class="text-right flex flex-col items-end min-w-0 flex-1" :class="{'cursor-help': Math.abs(cat.monthly) >= 100000000}" :title="Math.abs(cat.monthly) >= 100000000 ? selectedCurrency + formatCurrency(cat.monthly) : ''">
+                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0">Monthly</span>
+                                    <div class="text-sm font-black text-slate-700 dark:text-slate-300 mt-0.5 truncate w-full text-right">{{ selectedCurrency }}{{ formatCompact(cat.monthly) }}</div>
+                                </div>
+                            </div>
+                            <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{{ cat.name }}
+                            </h4>
+                            <div class="flex items-center justify-between mt-1 gap-2">
+                                <div class="flex items-center min-w-0 flex-1" :class="{'cursor-help': Math.abs(cat.amount) >= 100000000}" :title="Math.abs(cat.amount) >= 100000000 ? selectedCurrency + formatCurrency(cat.amount) : ''">
+                                    <div class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-50 truncate">{{ selectedCurrency }}{{ formatCompact(cat.amount) }}</div>
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded shrink-0">/ day</span>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+
+            <footer class="mt-20 pb-20 text-center border-t border-slate-200 dark:border-slate-800 pt-10">
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">BudgetArchitect v8.3</p>
+                <p class="text-sm font-medium text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5">
+                    Built with <i data-lucide="heart" class="w-4 h-4 text-rose-500 fill-rose-500"></i> by
+                    <a href="https://yoodule.com" target="_blank"
+                        class="text-blue-600 hover:text-blue-700 font-bold transition-colors inline-block">yoodule.com</a>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isDark: true,
+                income: 500000, selectedCurrency: '₦', 
+                essentialsPct: 60, lifestylePct: 20, futurePct: 20,
+                essentialsAmount: 300000, lifestyleAmount: 100000, futureAmount: 100000,
+                loanAmount: 150000, familyAmount: 40000,
+                estimateAmount: 0, estimateCategory: 'food',
+                currencies: [
+                    { code: 'USD', name: 'US Dollar', symbol: '$' }, { code: 'EUR', name: 'Euro', symbol: '€' }, { code: 'GBP', name: 'British Pound', symbol: '£' }, { code: 'JPY', name: 'Japanese Yen', symbol: '¥' }, { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' }, { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' }, { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' }, { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' }, { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' }, { code: 'INR', name: 'Indian Rupee', symbol: '₹' }, { code: 'ZAR', name: 'South African Rand', symbol: 'R' }, { code: 'MXN', name: 'Mexican Peso', symbol: '$' }, { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' }, { code: 'RUB', name: 'Russian Ruble', symbol: '₽' }, { code: 'KRW', name: 'South Korean Won', symbol: '₩' }, { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' }, { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼' }, { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' }, { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' }, { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' }, { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' }, { code: 'DKK', name: 'Danish Krone', symbol: 'kr' }, { code: 'TRY', name: 'Turkish Lira', symbol: '₺' }, { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' }, { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' }, { code: 'PHP', name: 'Philippine Peso', symbol: '₱' }, { code: 'THB', name: 'Thai Baht', symbol: '฿' }, { code: 'VND', name: 'Vietnamese Dong', symbol: '₫' }, { code: 'PLN', name: 'Polish Zloty', symbol: 'zł' }, { code: 'ILS', name: 'Israeli New Shekel', symbol: '₪' }, { code: 'COP', name: 'Colombian Peso', symbol: '$' }, { code: 'CLP', name: 'Chilean Peso', symbol: '$' }, { code: 'PEN', name: 'Peruvian Sol', symbol: 'S/' }, { code: 'ARS', name: 'Argentine Peso', symbol: '$' }, { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' }, { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£' }, { code: 'GHS', name: 'Ghanaian Cedi', symbol: 'GH₵' }
+                ]
+            },
+            computed: {
+                dailyAllowance() { return this.income / 30.417; },
+                catLimit() {
+                    const d = this.dailyAllowance;
+                    if (this.estimateCategory === 'food') return (this.essentialsAmount - this.loanAmount) / 30.417;
+                    if (this.estimateCategory === 'lifestyle') return (this.lifestyleAmount - this.familyAmount) / 30.417;
+                    return d * 0.1;
+                },
+                verdictRatio() { return this.estimateAmount / this.catLimit; },
+                verdictTitle() { return this.verdictRatio <= 1 ? "Standard Low-Risk" : "Moderate Budget Impact"; },
+                verdictIcon() { return this.verdictRatio <= 1 ? "✅" : "⚠️"; },
+                verdictClasses() { return this.verdictRatio <= 1 ? "bg-emerald-500 border-emerald-300 text-white" : "bg-amber-400 border-amber-300 text-slate-900 dark:text-slate-50"; },
+                verdictMessage() { return this.verdictRatio <= 1 ? "This expense is within your daily category limit." : "Warning: This purchase consumes your daily budget. Avoid further spending in this category."; },
+                budgetBreakdown() {
+                    return [
+                        { name: 'Loans / Debt', amount: this.loanAmount / 30.417, monthly: this.loanAmount, icon: 'landmark' },
+                        { name: 'Food & Utilities', amount: (this.essentialsAmount - this.loanAmount) / 30.417, monthly: (this.essentialsAmount - this.loanAmount), icon: 'shopping-bag' },
+                        { name: 'Family Help', amount: this.familyAmount / 30.417, monthly: this.familyAmount, icon: 'users' },
+                        { name: 'Investments', amount: this.futureAmount / 30.417, monthly: this.futureAmount, icon: 'trending-up' }
+                    ];
+                }
+            },
+            methods: {
+                toggleTheme() {
+                    this.isDark = !this.isDark;
+                    if (this.isDark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+                    else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+                formatCurrency(v) { return Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+                formatCompact(v) { 
+                    if (Math.abs(v) >= 100000000) {
+                        return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }).format(v); 
+                    }
+                    return this.formatCurrency(v);
+                },
+                updateCategoryAmount(key, val) {
+                    const amount = parseFloat(val) || 0;
+                    this[key + 'Amount'] = amount;
+                    
+                    // Total income is purely the sum of the 3 buckets now
+                    this.income = this.essentialsAmount + this.lifestyleAmount + this.futureAmount;
+                    
+                    // Percentage labels/sliders are strictly LOCKED to planning mode.
+                    // We do NOT update pcts here based on spending.
+                    this.saveSettings();
+                },
+                updateFixedBill(subKey, parentKey, val) {
+                    const amount = parseFloat(val) || 0;
+                    this[subKey] = amount;
+                    
+                    const parentAmt = this[parentKey + 'Amount'];
+                    if (amount > parentAmt) {
+                        // Expand parent to accommodate the bill
+                        this.updateCategoryAmount(parentKey, amount);
+                    }
+                    this.saveSettings();
+                },
+                updateByIncome() {
+                    // When total income edited, re-allocate based on FIXED percentages
+                    this.essentialsAmount = this.income * (this.essentialsPct / 100);
+                    this.lifestyleAmount = this.income * (this.lifestylePct / 100);
+                    this.futureAmount = this.income * (this.futurePct / 100);
+                    this.saveSettings();
+                },
+                resetToDefaults() { localStorage.clear(); location.reload(); },
+                syncPercentages(changedKey) {
+                    const keys = ['essentials', 'lifestyle', 'future'];
+                    const pctKeys = keys.map(k => k + 'Pct');
+                    const changedPctKey = changedKey + 'Pct';
+                    const otherKeys = pctKeys.filter(k => k !== changedPctKey);
+
+                    let newValue = parseInt(this[changedPctKey]) || 0;
+                    if (newValue > 100) newValue = 100;
+                    if (newValue < 0) newValue = 0;
+                    this[changedPctKey] = newValue;
+
+                    let diff = (newValue + this[otherKeys[0]] + this[otherKeys[1]]) - 100;
+
+                    while (diff > 0) {
+                        let v0 = this[otherKeys[0]];
+                        let v1 = this[otherKeys[1]];
+                        if (v0 > 0 && (v0 >= v1 || v1 === 0)) {
+                            this[otherKeys[0]]--;
+                        } else if (v1 > 0) {
+                            this[otherKeys[1]]--;
+                        } else {
+                            // Force changed key down if both others are 0
+                            this[changedPctKey]--;
+                        }
+                        diff--;
+                    }
+
+                    while (diff < 0) {
+                        let v0 = this[otherKeys[0]];
+                        let v1 = this[otherKeys[1]];
+                        if (v0 <= v1) {
+                            this[otherKeys[0]]++;
+                        } else {
+                            this[otherKeys[1]]++;
+                        }
+                        diff++;
+                    }
+
+                    this.$nextTick(() => { lucide.createIcons(); });
+                    this.saveSettings();
+                },
+                saveSettings() { 
+                    localStorage.setItem('budget_data', JSON.stringify({ 
+                        income: this.income, 
+                        selectedCurrency: this.selectedCurrency,
+                        essentialsPct: this.essentialsPct,
+                        lifestylePct: this.lifestylePct,
+                        futurePct: this.futurePct
+                    })); 
+                }
+            },
+            mounted() { 
+                if (localStorage.theme === 'light') {
+                    this.isDark = false;
+                    document.documentElement.classList.remove('dark');
+                } else {
+                    this.isDark = true;
+                    document.documentElement.classList.add('dark');
+                }
+
+                try {
+                    if (localStorage.budget_data) {
+                        const saved = JSON.parse(localStorage.budget_data);
+                        if (saved.income) this.income = saved.income;
+                        if (saved.selectedCurrency) this.selectedCurrency = saved.selectedCurrency;
+                        if (saved.essentialsPct !== undefined) this.essentialsPct = saved.essentialsPct;
+                        if (saved.lifestylePct !== undefined) this.lifestylePct = saved.lifestylePct;
+                        if (saved.futurePct !== undefined) this.futurePct = saved.futurePct;
+                    }
+                } catch(e) {}
+
+                lucide.createIcons(); 
+            }
+        });
+    </script>
+</body>
+
+</html>
